@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <script type="text/javascript" language="JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js" ></script>
+  <script type="text/javascript" language="JavaScript" src="overlay.js" ></script>
+	<title>overlay</title>
+	
+	<script type="text/javascript">
+		$(function(){ 
+		  	$('.inp').overlay({
+		  		contentType: 'iframe',
+		  		contentSrc: 'http://www.bbc.co.uk',
+		  		width: '400',
+		  		height: '400'
+		  	});
+		  
+		});
+	</script>
+	
+	<style type="text/css">
+	  .overlay-wrapper {
+	  		display:none;
+	  		border:5px solid #dcdcdc;
+	  		width:500px;
+	  		height:500px;
+	  	}
+	</style>
+
+</head>
+
+<body>
+	<input type="button" value="click test" data-overlay="overlay-wrapper" class="inp"  />
+</body>
+</html>
