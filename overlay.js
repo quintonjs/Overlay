@@ -1,7 +1,7 @@
 /**
  * quintons@qsheppard.com
  */
-$(function(){ 
+(function($){ 
 	
 	$.overlay = {
 		wrapper: 'overlay-wrapper',
@@ -29,7 +29,7 @@ $(function(){
 	var mask, progress, overlay, maskConfg;
 	
 	// should I seperate ythe progress out???
-	$.progress = {
+	/*$.progress = {
 		load: function(conf, callBack){
 			callBack = callBack || function(){};
 			progress = $('');
@@ -37,7 +37,7 @@ $(function(){
 		close: function(e){
 			
 		}
-	}
+	}*/
 	
 	$.mask = {
 		load: function(conf, callBack){
@@ -187,7 +187,6 @@ $(function(){
 			   			// apply self.close on iframe context of closeButtonId
 			   			// TODO: Test for iframe same as local domain, or localhost
 			   			// 		throw error if !localhost && !sameDomain
-			   			// TODO: Chrome (context) Error, close button in iFrame not working.
 			   			if(conf.closeButtonId){
 			   				context.find(conf.closeButtonId).one('click', function(e){
 			   					self.close(e)
@@ -305,4 +304,4 @@ $(function(){
   		}
   	}
   	
-});
+})(jQuery);
