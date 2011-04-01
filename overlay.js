@@ -26,7 +26,7 @@
  		}
 	}
 	
-	var mask, progress, overlay, maskConfg;
+	var mask, progress, overlay;
 	
 	// should I seperate ythe progress out???
 	/*$.progress = {
@@ -43,8 +43,6 @@
 		load: function(conf, callBack){
 			// does the mask exist?
 			mask = $('#' + conf.maskId);
-			
-			maskConfg = conf;
 			
 			// create the mask if not found
 			if(!mask.length){
@@ -80,8 +78,7 @@
 
 		},
 		close: function(){
-			//console.log('close mask')
-			mask.fadeOut(maskConfg.loadSpeed);
+			mask.fadeOut($.overlay.mask.loadSpeed);
 		},
 		getMask: function(){
 			return mask;
@@ -148,11 +145,7 @@
    					content.remove()
    					self.close();
    				}, conf.timeoutSec*1000)
-   				*/
-   				
-
-   						// found file to load
-   						
+   				*/   						
    				
    				// bind load event to iframe
    				//content.load(conf.contentSrc, function(rep, stat, xhr){
@@ -187,12 +180,12 @@
 			   			// apply self.close on iframe context of closeButtonId
 			   			// TODO: Test for iframe same as local domain, or localhost
 			   			// 		throw error if !localhost && !sameDomain
-			   			if(conf.closeButtonId){
+			   			/*if(conf.closeButtonId){
 			   				context.find(conf.closeButtonId).one('click', function(e){
 			   					self.close(e)
 			   					return e.preventDefault()
 			   				})
-			   			}
+			   			}*/
 		   			//}
 	   			})
 					break;
