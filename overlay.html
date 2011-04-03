@@ -4,15 +4,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <script type="text/javascript" language="JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js" ></script>
-  <script type="text/javascript" language="JavaScript" src="overlay.js" ></script>
+	<script type="text/javascript" language="JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js" ></script>
+	<!--script type="text/javascript" language="JavaScript" src="jquery-1.4.4.js" ></script-->
+	<script type="text/javascript" language="JavaScript" src="overlay.js" ></script>
 	<title>overlay</title>
 	
 	<script type="text/javascript">
 		$(function(){ 
 		  	$('.inp').overlay({
 		  		contentType: 'iframe',
-		  		contentSrc: 'http://www.bbc.co.uk',
+		  		url: 'iframe-test-file.html',/*http://www.bbc.co.uk*/
+		  		load: true,
 		  		width: '400',
 		  		height: '400'
 		  	});

@@ -3,13 +3,14 @@
  */
 (function($){ 
 	
-	$.overlay = {
+	$.overlaySettings = {
 		wrapper: 'overlay-wrapper',
 		width: null,
 		height: null,
  		load: false,
  		contentType: 'inpage', /*inpage, iframe, ajax*/
- 		contentSrc: null, /*id/class name, URL*/
+ 		url: null, /*URL - used for iframe or ajax*/
+ 		target: null,
  		closeButtonId: '.closeButton',
  		loadSpeed: 600,
  		timeoutSec: 8,
@@ -26,18 +27,9 @@
  		}
 	}
 	
-	var mask, progress, overlay;
+	//$().overlay({})
 	
-	// should I seperate ythe progress out???
-	/*$.progress = {
-		load: function(conf, callBack){
-			callBack = callBack || function(){};
-			progress = $('');
-		},
-		close: function(e){
-			
-		}
-	}*/
+	var mask, progress, overlay;
 	
 	$.mask = {
 		load: function(conf, callBack){
@@ -52,7 +44,7 @@
 			
 			// set its properties
 			mask.css({
-				position: $.overlay.pos,
+				position: $.overlaySettings.pos,
 				left: '0',
 				top: '0',
 				backgroundColor: conf.color,
@@ -78,7 +70,7 @@
 
 		},
 		close: function(){
-			mask.fadeOut($.overlay.mask.loadSpeed);
+			mask.fadeOut($.overlaySettings.mask.loadSpeed);
 		},
 		getMask: function(){
 			return mask;
@@ -112,8 +104,6 @@
    	// can't find the overlay!
    	if(!overlay) { throw('Cound not find overlay: ' + oid) }
    	
-   	if(conf.load){ self.load(); }
-   	
    	// trigger load
    	if(trigger && !conf.load){
    		trigger.click(function(e){
@@ -127,32 +117,45 @@
 			//iframe, ajax, div-content
 			switch(conf.contentType){
 				case 'iframe':
-   				var content = $('<iframe />').attr("src", conf.contentSrc);
+   				var content = $('<iframe />'); //.attr("src", conf.url);
    				content.css({ left: '-1000px', position: conf.pos, display: 'block' })
    				
    				overlay = content;
    				
-   				if($.overlay.wrapper != null){
-   					content.attr("class", $.overlay.wrapper);
+   				if(conf.wrapper != null){
+   					content.attr("class", conf.wrapper);
    				}
    				
    				// w/h from config or element?
 					var w = (conf.width != null) ? conf.width : content.width();
-   				var h = (conf.height != null) ? conf.height : content.height();
+   				var h = (conf.height != null) ? conf.height : content.height();  						
    				
-   				/*var t = setTimeout(function(){
-   					// on timeout call...
-   					content.remove()
-   					self.close();
-   				}, conf.timeoutSec*1000)
-   				*/   						
+   				/*$.ajax({
+   					statusCode: {
+   						200: function(){
+   							alert('OK')
+   						}
+   					},
+   					error: function(xhr, textStatus, errorThrown){
+   						alert('error: ' + textStatus);
+   					},
+   					success: function(data, textStatus){
+   						alert("success: " + textStatus);
+   					},
+   					complete: function(xhr, textStatus){
+   						alert('complete: ' + textStatus)
+   					},
+   					isLocal: true,
+   					timeout: (conf.timeoutSec+5)*1000,
+   					async: false,
+   					url: conf.url,
+   					type: 'HEAD'
+   				})*/
+   				
+   				content.attr("src", conf.url);
    				
    				// bind load event to iframe
-   				//content.load(conf.contentSrc, function(rep, stat, xhr){
    				content.bind('load', function(){
-   					/*if(xhr.status == '404'){
-   						alert("can't find file!");
-   					}else{*/
 		   				
 		   				// clear timeout
 		   				//clearTimeout(t);
@@ -180,17 +183,19 @@
 			   			// apply self.close on iframe context of closeButtonId
 			   			// TODO: Test for iframe same as local domain, or localhost
 			   			// 		throw error if !localhost && !sameDomain
-			   			/*if(conf.closeButtonId){
+			   			
+			   			//var isDomainMatch = true;
+			   			//if(conf.closeButtonId && isDomainMatch){
 			   				context.find(conf.closeButtonId).one('click', function(e){
 			   					self.close(e)
 			   					return e.preventDefault()
 			   				})
-			   			}*/
+			   			//}
 		   			//}
 	   			})
 					break;
 				case 'inpage':
-					//context = $(conf.contentSrc);
+					//context = $(conf.url);
 					
 					// default overlay
 		   		/*if(conf.closeButtonId){
@@ -234,7 +239,7 @@
    			}
    			
    			// show mask
-   			$.mask.load($.overlay.mask, 
+   			$.mask.load($.overlaySettings.mask, 
    				function(){
    						progress.fadeIn('slow', loadContent())
    				} 
@@ -244,7 +249,7 @@
    		},
    		close: function(e){
    			// close overlay code...
-   			$.progress.close();
+   			//$.progress.close();
    			this.getOverlay().fadeOut(500, function(){$.mask.close()});
    			opened = false;
    		},
@@ -256,10 +261,14 @@
    		}
    	})
     	
+    	if(conf.load){
+    		self.load();
+    	}
+    	
    	return self;
    }
 			
-   $.fn.overlay = function(conf){
+    $.fn.overlay = function(conf){
    	
    	// create new instance of overlay
    	var el = this.data('overlay'),
@@ -267,7 +276,7 @@
    		
     	if(el){ return el; }
     	
-    	conf = $.extend(true, {}, $.overlay, conf)
+    	conf = $.extend(true, {}, $.overlaySettings, conf)
     	
     	el = new Overlay($this, conf);
   		$this.data('overlay', el)
@@ -275,7 +284,6 @@
   		return this;
   		
   	}
-  	
   	
   	// mastek only code.
   	var mastek = {
@@ -289,9 +297,9 @@
 		  				return (a.length == 3) ? 
 		  					(a[0] != null && a[0].length > 0) ? a[0] : conf.wrapper : conf.wrapper;
 		  		})(),
-		  		contentSrc : (function(){
+		  		url : (function(){
 		  				return (a.length == 3) ?
-		  					(a[2] != null && a[2].length > 0) ? a[2] : conf.contentSrc : conf.contentSrc;
+		  					(a[2] != null && a[2].length > 0) ? a[2] : conf.url : conf.url;
 		  		})()
 		  	}
   		}
