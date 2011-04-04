@@ -27,8 +27,6 @@
  		}
 	}
 	
-	//$().overlay({})
-	
 	var mask, progress, overlay;
 	
 	$.mask = {
@@ -98,14 +96,14 @@
    	
    	// private methods
 		// get overlay class wrapper
-   	oid = conf.wrapper || trigger.attr('data-overlay');
+   	oid = conf.wrapper || trigger.attr('data-overlay-wrapper');
    	overlay = $(oid);
    	
    	// can't find the overlay!
    	if(!overlay) { throw('Cound not find overlay: ' + oid) }
    	
    	// trigger load
-   	if(trigger && !conf.load){
+   	if(trigger){
    		trigger.click(function(e){
    			self.load(e);
    			return e.preventDefault();
@@ -118,7 +116,7 @@
 			switch(conf.contentType){
 				case 'iframe':
    				var content = $('<iframe />'); //.attr("src", conf.url);
-   				content.css({ left: '-1000px', position: conf.pos, display: 'block' })
+   				content.css({ left: '-1000px', position: 'absolute', display: 'block' })
    				
    				overlay = content;
    				
@@ -166,6 +164,7 @@
 			   				width: w,
 			   				height: h,
 			   				display: 'none',
+			   				position: conf.pos,
 			   				top: '50%',
 			   				marginLeft: '-' + w/2 + 'px',
 			   				marginTop: '-' + h/2 + 'px',
@@ -195,17 +194,8 @@
 	   			})
 					break;
 				case 'inpage':
-					//context = $(conf.url);
-					
-					// default overlay
-		   		/*if(conf.closeButtonId){
-		   			content.$(conf.closeButtonId).one('click', function(e){self.close(e)})
-		   		}*/
 					break;
 				case 'ajax':
-		   		/*if(conf.closeButtonId){
-		   			content.$(conf.closeButtonId).one('click', function(e){self.close(e)})
-		   		}*/
 					break;
 				default:
 					break;
@@ -219,8 +209,6 @@
    		load: function(e){
    			// load overlay code...
    			if(self.isOpened()){return self;}
-   			
-   			//$.progress.load();
    			
    			progress = $('#overlayProgress');
    			
@@ -248,8 +236,6 @@
    			opened = true;
    		},
    		close: function(e){
-   			// close overlay code...
-   			//$.progress.close();
    			this.getOverlay().fadeOut(500, function(){$.mask.close()});
    			opened = false;
    		},
@@ -268,23 +254,26 @@
    	return self;
    }
 			
-    $.fn.overlay = function(conf){
-   	
-   	// create new instance of overlay
+
+
+	$.fn.overlay = function(conf){
+		// create new instance of overlay
    	var el = this.data('overlay'),
    		$this = $(this);
-   		
     	if(el){ return el; }
-    	
-    	conf = $.extend(true, {}, $.overlaySettings, conf)
-    	
+    	var conf = $.extend(true, {}, $.overlaySettings, conf)
     	el = new Overlay($this, conf);
   		$this.data('overlay', el)
-  		
   		return this;
-  		
-  	}
-  	
+	}
+	
+	$.extend({
+		overlay: function(conf){
+			conf.load = true;
+			return Overlay(null, $.extend(true, {}, $.overlaySettings, conf));
+		}
+	})
+	
   	// mastek only code.
   	var mastek = {
   		setConf: function(trigger, conf){
