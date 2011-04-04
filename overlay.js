@@ -9,39 +9,38 @@
 		height: null,
  		load: false,
  		contentType: 'inpage', /*inpage, iframe, ajax*/
- 		url: null, /*URL - used for iframe or ajax*/
- 		target: null,
+ 		contentSrc: null, /*class/id, URL*/
  		closeButtonId: '.closeButton',
- 		loadSpeed: 600,
+ 		loadSpeed: 500,
+ 		reloadPageOnClose: false, /*mastek only code*/
  		timeoutSec: 8,
  		pos: ($.browser.msie && $.browser.version <= 6) ? 'absolute' : 'fixed',
  		mask: {
  			maskId: "mask",
 			color: '#000',
-			loadSpeed: 600,
+			loadSpeed: 500,
 			opacity: 0.7,
-			closeOnClick: true
 		},
  		progress: {
  			src: 'progress.gif'
  		}
 	}
 	
-	var mask, progress, overlay;
+	var $mask, $progress, $overlay = null;
 	
 	$.mask = {
 		load: function(conf, callBack){
 			// does the mask exist?
-			mask = $('#' + conf.maskId);
+			$mask = $('#' + conf.maskId);
 			
 			// create the mask if not found
-			if(!mask.length){
-				mask = $("<div />").attr("id", conf.maskId)
-				$('body').append(mask);
+			if(!$mask.length){
+				$mask = $("<div />").attr("id", conf.maskId)
+				$('body').append($mask);
 			}
 			
 			// set its properties
-			mask.css({
+			$mask.css({
 				position: $.overlaySettings.pos,
 				left: '0',
 				top: '0',
@@ -53,10 +52,8 @@
 				zIndex: '9997'
 			})
 			
-			callBack = callBack || function(){}
-			
 			// animate mask
-			mask.fadeIn(conf.loadSpeed, callBack);
+			$mask.fadeIn(conf.loadSpeed, callBack);
 			
 			// resize mask on window resize
 			$(window).bind('resize.mask', function(e){
@@ -67,11 +64,11 @@
 			})
 
 		},
-		close: function(){
-			mask.fadeOut($.overlaySettings.mask.loadSpeed);
+		close: function(conf, callBack){
+			$mask.fadeOut(conf.mask.loadSpeed, callBack);
 		},
 		getMask: function(){
-			return mask;
+			return $mask;
 		}
 	}
 	
@@ -82,13 +79,11 @@
    * 	conf - options.
    */
    function Overlay(trigger, conf){
-   	// sets up overlay
    	
    	// private members
    	var self = this,
    		opened = false,
    		oid,
-   		content,
    		uid = Math.random().toString().slice(10);
    	
    	// test if mastek showOverlay exists - set accordingly
@@ -97,10 +92,10 @@
    	// private methods
 		// get overlay class wrapper
    	oid = conf.wrapper || trigger.attr('data-overlay-wrapper');
-   	overlay = $(oid);
+   	$overlay = $(oid);
    	
    	// can't find the overlay!
-   	if(!overlay) { throw('Cound not find overlay: ' + oid) }
+   	if(!$overlay) { throw('Cound not find overlay: ' + oid) }
    	
    	// trigger load
    	if(trigger){
@@ -112,96 +107,62 @@
    	
    	var loadContent = function(){
 			// load content
-			//iframe, ajax, div-content
+			//iframe, ajax, inpage
 			switch(conf.contentType){
 				case 'iframe':
-   				var content = $('<iframe />'); //.attr("src", conf.url);
-   				content.css({ left: '-1000px', position: 'absolute', display: 'block' })
-   				
-   				overlay = content;
+   				$overlay = $('<iframe />');
+   				$overlay.css({ left: '-1000px', position: 'absolute', display: 'block' })
    				
    				if(conf.wrapper != null){
-   					content.attr("class", conf.wrapper);
+   					$overlay.attr("class", conf.wrapper);
    				}
    				
    				// w/h from config or element?
-					var w = (conf.width != null) ? conf.width : content.width();
-   				var h = (conf.height != null) ? conf.height : content.height();  						
+					var w = (conf.width != null) ? conf.width : $overlay.width();
+   				var h = (conf.height != null) ? conf.height : $overlay.height();  						
    				
-   				/*$.ajax({
-   					statusCode: {
-   						200: function(){
-   							alert('OK')
-   						}
-   					},
-   					error: function(xhr, textStatus, errorThrown){
-   						alert('error: ' + textStatus);
-   					},
-   					success: function(data, textStatus){
-   						alert("success: " + textStatus);
-   					},
-   					complete: function(xhr, textStatus){
-   						alert('complete: ' + textStatus)
-   					},
-   					isLocal: true,
-   					timeout: (conf.timeoutSec+5)*1000,
-   					async: false,
-   					url: conf.url,
-   					type: 'HEAD'
-   				})*/
-   				
-   				content.attr("src", conf.url);
+   				$overlay.attr("src", conf.contentSrc);
    				
    				// bind load event to iframe
-   				content.bind('load', function(){
-		   				
-		   				// clear timeout
-		   				//clearTimeout(t);
-		   				
-		   				progress.hide();
-		   				
-			   			content.css({
-			   				width: w,
-			   				height: h,
-			   				display: 'none',
-			   				position: conf.pos,
-			   				top: '50%',
-			   				marginLeft: '-' + w/2 + 'px',
-			   				marginTop: '-' + h/2 + 'px',
-			   				zIndex: '9999'
-			   			})
+   				$overlay.bind('load', function(){
+   					
+			   		$overlay.css({
+		   				width: w,
+		   				height: h,
+		   				display: 'none',
+		   				position: conf.pos,
+		   				top: '50%',
+		   				marginLeft: '-' + w/2 + 'px',
+		   				marginTop: '-' + h/2 + 'px',
+		   				zIndex: '9999'
+		   			})
 			   			
-			   			// fade in content
-			   			progress.fadeOut('500', function(){
-			   				content.css({left: '50%'}).fadeIn(conf.loadSpeed)
-			   			})
+		   			// fade in content
+		   			$progress.fadeOut('500', function(){
+		   				$overlay.css({left: '50%'}).fadeIn(conf.loadSpeed)
+		   			})
 			   			
-			   			// tempary cache of iframe object context;
-			   			var context = content.contents()
-			   			
-			   			// apply self.close on iframe context of closeButtonId
-			   			// TODO: Test for iframe same as local domain, or localhost
-			   			// 		throw error if !localhost && !sameDomain
-			   			
-			   			//var isDomainMatch = true;
-			   			//if(conf.closeButtonId && isDomainMatch){
-			   				context.find(conf.closeButtonId).one('click', function(e){
-			   					self.close(e)
-			   					return e.preventDefault()
-			   				})
-			   			//}
+		   			//TODO: throw error if !localhost && !sameDomain
+		   			//var isDomainMatch = true;
+		   			//if(conf.closeButtonId && isDomainMatch){
+		   				$overlay.contents().find(conf.closeButtonId).one('click', function(e){
+		   					self.close(e)
+		   					return e.preventDefault()
+		   				})
 		   			//}
 	   			})
 					break;
 				case 'inpage':
+					console.warn('"inpage" switch not enabled');
 					break;
 				case 'ajax':
+					console.warn('"ajax" switch not enabled');
 					break;
 				default:
 					break;
 			}
 			
-			$('body').prepend(content);
+			$('body').prepend($overlay);
    	}
    	
    	$.extend(self, {
@@ -210,40 +171,46 @@
    			// load overlay code...
    			if(self.isOpened()){return self;}
    			
-   			progress = $('#overlayProgress');
+   			$progress = $('#overlayProgress');
    			
    			// does progress exist?
-   			if(!progress.length){
+   			if(!$progress.length){
 	   			// create & show progress
-	   			progress = $('<img src="'+conf.progress.src+'" id="overlayProgress" />');
-	   			progress.css({
+	   			$progress = $('<img src="'+conf.progress.src+'" id="overlayProgress" />');
+	   			$progress.css({
 	   				top: '50%',
 	   				display: 'none',
 	   				left: '50%',
 	   				zIndex: '9998',
 	   				position: conf.pos
 	   			})
-	   			$('body').append(progress);
+	   			$('body').append($progress);
    			}
    			
    			// show mask
-   			$.mask.load($.overlaySettings.mask, 
+   			$.mask.load(conf.mask, 
    				function(){
-   						progress.fadeIn('slow', loadContent())
+   						$progress.fadeIn('slow', loadContent())
    				} 
    			)
    			
    			opened = true;
    		},
    		close: function(e){
-   			this.getOverlay().fadeOut(500, function(){$.mask.close()});
+   			this.getOverlay().fadeOut(500, 
+   				function(){$.mask.close(conf, 
+						function(){
+							if(conf.reloadPageOnClose){window.location.reload();}
+						}
+   				)}
+   			);
    			opened = false;
    		},
    		isOpened: function(){
    			return opened;
    		},
    		getOverlay: function(){
-   			return overlay;
+   			return $overlay;
    		}
    	})
     	
@@ -261,16 +228,16 @@
    	var el = this.data('overlay'),
    		$this = $(this);
     	if(el){ return el; }
-    	var conf = $.extend(true, {}, $.overlaySettings, conf)
-    	el = new Overlay($this, conf);
-  		$this.data('overlay', el)
+    	$.extend(true, $.overlaySettings, conf);
+    	el = new Overlay($this, $.overlaySettings);
+  		$this.data('overlay', el);
   		return this;
 	}
 	
 	$.extend({
 		overlay: function(conf){
 			conf.load = true;
-			return Overlay(null, $.extend(true, {}, $.overlaySettings, conf));
+			return Overlay(null, $.extend(true, $.overlaySettings, conf));
 		}
 	})
 	
@@ -286,9 +253,9 @@
 		  				return (a.length == 3) ? 
 		  					(a[0] != null && a[0].length > 0) ? a[0] : conf.wrapper : conf.wrapper;
 		  		})(),
-		  		url : (function(){
+		  		contentSrc : (function(){
 		  				return (a.length == 3) ?
-		  					(a[2] != null && a[2].length > 0) ? a[2] : conf.url : conf.url;
+		  					(a[2] != null && a[2].length > 0) ? a[2] : conf.contentSrc : conf.contentSrc;
 		  		})()
 		  	}
   		}

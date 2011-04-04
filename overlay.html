@@ -13,8 +13,17 @@
 		$(function(){ 
 		  	$('.inp').overlay({
 		  		contentType: 'iframe',
-		  		url: 'iframe-test-file.html',/*http://www.bbc.co.uk*/
+		  		//contentSrc: 'iframe-test-file.html',
+		  		mastek: true,
 		  		load: true,
+		  		reloadPageOnClose: true,
+		  		loadSpeed: 1000,
+		  		mask: {
+		  			loadSpeed: 1000
+		  		},
+		  		//contentType: 'inpage',
+		  		//contentSrc: '.foo',
+		  		//load: true,
 		  		width: '400',
 		  		height: '400'
 		  	});
@@ -32,6 +41,17 @@
 </head>
 
 <body>
-	<input type="button" value="click test" class="inp"  />
+	<input type="button" value="click test" class="inp" onClick="showOverlay('overlay-wrapper2', '', 'iframe-test-file.html')"  />
+	<div class="foo">
+		
+		<h1>Some content is to be here.</h1>
+		<p>
+			Lorem Ipsum dolar sit Lorem Ipsum dolar sit Lorem Ipsum dolar sit 
+			Lorem Ipsum dolar sit Lorem Ipsum dolar sit Lorem Ipsum dolar sit
+			Lorem Ipsum dolar sit Lorem Ipsum dolar sit Lorem Ipsum dolar sit
+			Lorem Ipsum dolar sit Lorem Ipsum dolar sit Lorem Ipsum dolar sit
+			Lorem Ipsum dolar sit Lorem Ipsum dolar sit Lorem Ipsum dolar sit
+		</p>
+	</div>
 </body>
 </html>
