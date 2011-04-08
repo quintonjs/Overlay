@@ -11,64 +11,83 @@
  		contentType: 'inpage', /*inpage, iframe, ajax*/
  		contentSrc: null, /*class/id, URL*/
  		closeButtonId: '.closeButton',
- 		loadSpeed: 500,
- 		reloadPageOnClose: false, /*mastek only code*/
- 		timeoutSec: 8,
+ 		submitPageOnClose: false, /*mastek only code*/
+ 		speed: 500,
  		pos: ($.browser.msie && $.browser.version <= 6) ? 'absolute' : 'fixed',
  		mask: {
- 			maskId: "mask",
+ 			id: "Mask",
 			color: '#000',
-			loadSpeed: 500,
-			opacity: 0.7,
+			speed: 500, /*loading/unloading speed*/
+			opacity: 0.8
 		},
  		progress: {
+ 			id: "Progress",
  			src: 'progress.gif'
  		}
 	}
 	
 	var $mask, $progress, $overlay = null;
 	
-	$.mask = {
-		load: function(conf, callBack){
+	var progress = {
+		load: function(conf){
+   		
+   		$progress = $(conf.progress.id);
+   		
+   		// does progress exist?
+   		if(!$progress.length){
+	   		// create & show progress
+	   		$progress = $('<img src="'+conf.progress.src+'" id="overlayProgress" />');
+	   		$progress.css({
+	   			top: '50%',
+	   			display: 'none',
+	   			left: '50%',
+	   			zIndex: '9998',
+	   			position: conf.pos
+	   		})
+	   		$('body').append($progress);
+   		}
+		},
+		close: function(conf, callback){
+			$progress.fadeOut(500, callback)
+		}
+	}
+	
+	var mask = {
+		load: function(conf, callback){
 			// does the mask exist?
-			$mask = $('#' + conf.maskId);
+			$mask = $('#' + conf.mask.id);
+			var $w = $(window);
 			
 			// create the mask if not found
 			if(!$mask.length){
-				$mask = $("<div />").attr("id", conf.maskId)
+				$mask = $("<div />").attr("id", conf.mask.id)
 				$('body').append($mask);
 			}
 			
 			// set its properties
 			$mask.css({
-				position: $.overlaySettings.pos,
-				left: '0',
-				top: '0',
-				backgroundColor: conf.color,
-				height: $(window).height(),
-				width: $(window).width(),
+				top: 0,
+				left: 0,
+				position: conf.pos,
+				backgroundColor: conf.mask.color,
+				height: $w.height(),
+				width: $w.width(),
 				display: 'none',
-				opacity: conf.opacity,
+				opacity: conf.mask.opacity,
 				zIndex: '9997'
-			})
-			
-			// animate mask
-			$mask.fadeIn(conf.loadSpeed, callBack);
+			}).fadeIn(conf.mask.speed, callback); // animate mask
 			
 			// resize mask on window resize
 			$(window).bind('resize.mask', function(e){
-				$('#' + conf.maskId).css({
-					height: $(window).height(),
-					width: $(window).width()
+				$mask.css({
+					height: $w.height(),
+					width: $w.width()
 				})
 			})
 
 		},
-		close: function(conf, callBack){
-			$mask.fadeOut(conf.mask.loadSpeed, callBack);
-		},
-		getMask: function(){
-			return $mask;
+		close: function(conf, callback){
+			$mask.fadeOut(conf.mask.speed, callback);
 		}
 	}
 	
@@ -84,14 +103,15 @@
    	var self = this,
    		opened = false,
    		oid,
-   		uid = Math.random().toString().slice(10);
+   		uid = Math.random().toString().slice(10),
+   		$w = $(window), w, h;
    	
    	// test if mastek showOverlay exists - set accordingly
    	if(conf.mastek){$.extend(conf, mastek.setConf(trigger, conf))}
    	
    	// private methods
 		// get overlay class wrapper
-   	oid = conf.wrapper || trigger.attr('data-overlay-wrapper');
+   	oid = conf.wrapper || trigger.attr('data-wrapper');
    	$overlay = $(oid);
    	
    	// can't find the overlay!
@@ -105,51 +125,60 @@
    		})
    	}
    	
+		// resize overlay on window resize
+		$w.bind('resize.overlay', function(e){
+			console.log($overlay.outerHeight() + " : " + $w.height())
+			if($w.height()+20 <= $overlay.height()){
+				h = $w.height()
+				$overlay.css({
+					height: h,
+					marginTop: '-' + h/2 + 'px'})
+			}
+		})
+   	
+   	var setOverlayCss = function(){
+   		var w = (conf.width != null) ? conf.width : 
+						(trigger.data('width')) ? trigger.data('width') : $overlay.outerWidth();
+   		var h = (conf.height != null) ? conf.height : 
+	   				(trigger.data('height')) ? trigger.data('height') : $overlay.outerHeight();
+	   				
+	   	// test overlay w/h to make sure it is less than the window w/h
+	   	$overlay.css({
+				width: w,
+				height: h,
+				display: 'none',
+				position: conf.pos,
+				top: '50%',
+				marginLeft: '-' + w/2 + 'px',
+				marginTop: '-' + h/2 + 'px',
+				zIndex: '9999'
+			})
+	   }
+   	
    	var loadContent = function(){
 			// load content
-			//iframe, ajax, inpage
 			switch(conf.contentType){
 				case 'iframe':
-   				$overlay = $('<iframe />');
-   				$overlay.css({ left: '-1000px', position: 'absolute', display: 'block' })
+   				$overlay = $('<iframe />').appendTo('body');
    				
-   				if(conf.wrapper != null){
-   					$overlay.attr("class", conf.wrapper);
-   				}
-   				
-   				// w/h from config or element?
-					var w = (conf.width != null) ? conf.width : $overlay.width();
-   				var h = (conf.height != null) ? conf.height : $overlay.height();  						
-   				
-   				$overlay.attr("src", conf.contentSrc);
-   				
-   				// bind load event to iframe
-   				$overlay.bind('load', function(){
-   					
-			   		$overlay.css({
-		   				width: w,
-		   				height: h,
-		   				display: 'none',
-		   				position: conf.pos,
-		   				top: '50%',
-		   				marginLeft: '-' + w/2 + 'px',
-		   				marginTop: '-' + h/2 + 'px',
-		   				zIndex: '9999'
-		   			})
-			   			
-		   			// fade in content
-		   			$progress.fadeOut('500', function(){
-		   				$overlay.css({left: '50%'}).fadeIn(conf.loadSpeed)
-		   			})
-			   			
-		   			//TODO: throw error if !localhost && !sameDomain
-		   			//var isDomainMatch = true;
-		   			//if(conf.closeButtonId && isDomainMatch){
-		   				$overlay.contents().find(conf.closeButtonId).one('click', function(e){
-		   					self.close(e)
-		   					return e.preventDefault()
-		   				})
-		   			//}
+   				if(conf.wrapper != null){ $overlay.attr("class", conf.wrapper); }
+	   			
+   				$overlay
+   				.css({ left: '-1000px', position: 'absolute', display: 'block' })
+   				.attr("src", conf.contentSrc)
+					.bind('load', function(){
+						
+						setOverlayCss();
+			   		
+					   // fade in content
+					   $progress.fadeOut(500, function(){
+					   	$overlay.css({left: '50%'}).fadeIn(conf.speed)
+					   })
+		   			
+			   		$overlay.contents().find(conf.closeButtonId).one('click', function(e){
+			   			self.close(e)
+			   			return e.preventDefault()
+			   		})
 	   			})
 					break;
 				case 'inpage':
@@ -162,52 +191,33 @@
 					break;
 			}
 			
-			$('body').prepend($overlay);
+			
    	}
    	
    	$.extend(self, {
    		// public methods
    		load: function(e){
-   			// load overlay code...
-   			if(self.isOpened()){return self;}
    			
-   			$progress = $('#overlayProgress');
-   			
-   			// does progress exist?
-   			if(!$progress.length){
-	   			// create & show progress
-	   			$progress = $('<img src="'+conf.progress.src+'" id="overlayProgress" />');
-	   			$progress.css({
-	   				top: '50%',
-	   				display: 'none',
-	   				left: '50%',
-	   				zIndex: '9998',
-	   				position: conf.pos
-	   			})
-	   			$('body').append($progress);
-   			}
+   			progress.load(conf);
    			
    			// show mask
-   			$.mask.load(conf.mask, 
+   			mask.load(conf, 
    				function(){
-   						$progress.fadeIn('slow', loadContent())
+   						$progress.fadeIn(500, loadContent())
    				} 
    			)
    			
    			opened = true;
    		},
    		close: function(e){
-   			this.getOverlay().fadeOut(500, 
-   				function(){$.mask.close(conf, 
+   			$overlay.fadeOut(conf.speed, 
+   				function(){mask.close(conf	, 
 						function(){
-							if(conf.reloadPageOnClose){window.location.reload();}
+							if(conf.submitPageOnClose){document.forms[0].submit();}
 						}
    				)}
    			);
    			opened = false;
-   		},
-   		isOpened: function(){
-   			return opened;
    		},
    		getOverlay: function(){
    			return $overlay;
@@ -231,6 +241,7 @@
     	$.extend(true, $.overlaySettings, conf);
     	el = new Overlay($this, $.overlaySettings);
   		$this.data('overlay', el);
+  		
   		return this;
 	}
 	
@@ -245,8 +256,15 @@
   	var mastek = {
   		setConf: function(trigger, conf){
   			var a;
-  			function showOverlay(){ a = arguments;}
-  			eval('('+trigger.attr('onclick')+')()');
+  			window.showOverlay = function(){ a = arguments;}
+  			var onclick = trigger.attr('onclick');
+  			
+  			if(onclick !== undefined){
+  				eval('('+onclick+')()');
+  			}else{
+  				throw('No onclick event with "showOverlay()" available on trigger element.')
+  				return false;
+  			}
   			
   			return {
 		  		wrapper : (function(){

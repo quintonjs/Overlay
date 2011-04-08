@@ -4,8 +4,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<script type="text/javascript" language="JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js" ></script>
-	<!--script type="text/javascript" language="JavaScript" src="jquery-1.4.4.js" ></script-->
+	<!--script type="text/javascript" language="JavaScript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js" ></script-->
+	<script type="text/javascript" language="JavaScript" src="jquery-1.4.4.js" ></script>
 	<script type="text/javascript" language="JavaScript" src="overlay.js" ></script>
 	<title>overlay</title>
 	
@@ -13,35 +13,33 @@
 		$(function(){ 
 		  	$('.inp').overlay({
 		  		contentType: 'iframe',
-		  		//contentSrc: 'iframe-test-file.html',
-		  		mastek: true,
-		  		load: true,
+		  		contentSrc: 'iframe-test-file.html',
 		  		reloadPageOnClose: true,
 		  		loadSpeed: 1000,
 		  		mask: {
 		  			loadSpeed: 1000
 		  		},
-		  		//contentType: 'inpage',
-		  		//contentSrc: '.foo',
-		  		//load: true,
-		  		width: '400',
 		  		height: '400'
 		  	});
 		});
 	</script>
 	
 	<style type="text/css">
+		
+	</style>
+	
+	<style type="text/css">
 	  .overlay-wrapper {
 	  		border:5px solid #dcdcdc;
-	  		width:500px;
+	  		width:600px;
 	  		height:500px;
 	  	}
 	</style>
 
 </head>
-
-<body>
-	<input type="button" value="click test" class="inp" onClick="showOverlay('overlay-wrapper2', '', 'iframe-test-file.html')"  />
+<!--  -->
+<body><!-- data-width="1000" -->
+	<input type="button" value="click test" class="inp"   />
 	<div class="foo">
 		
 		<h1>Some content is to be here.</h1>
