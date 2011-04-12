@@ -104,7 +104,7 @@
    		opened = false,
    		oid,
    		uid = Math.random().toString().slice(10),
-   		$w = $(window), w, h;
+   		$w = $(window);
    	
    	// test if mastek showOverlay exists - set accordingly
    	if(conf.mastek){$.extend(conf, mastek.setConf(trigger, conf))}
@@ -127,30 +127,41 @@
    	
 		// resize overlay on window resize
 		$w.bind('resize.overlay', function(e){
-			console.log($overlay.outerHeight() + " : " + $w.height())
-			if($w.height()+20 <= $overlay.height()){
-				h = $w.height()
+			if(opened){
+	   		var h = ($w.height() -40 < self.height) ? $w.height() -40 : self.height;
+	   		var w = ($w.width() -40 < self.width) ? $w.width() -40 : self.width;
 				$overlay.css({
 					height: h,
-					marginTop: '-' + h/2 + 'px'})
+					width: w,
+					marginTop: '-' + h/2 + 'px',
+					marginLeft: '-' + w/2 + 'px'})
 			}
 		})
    	
    	var setOverlayCss = function(){
-   		var w = (conf.width != null) ? conf.width : 
-						(trigger.data('width')) ? trigger.data('width') : $overlay.outerWidth();
-   		var h = (conf.height != null) ? conf.height : 
-	   				(trigger.data('height')) ? trigger.data('height') : $overlay.outerHeight();
-	   				
-	   	// test overlay w/h to make sure it is less than the window w/h
+   		// set the overlay's default width/height
+   		self.width 	= 	conf.width != null ? conf.width : 
+								trigger.data('width') ? trigger.data('width') : $overlay.outerWidth();
+   		self.height = 	conf.height != null ? conf.height : 
+	   						trigger.data('height') ? trigger.data('height') : $overlay.outerHeight();
+	   	
+	   	// set the current overlay width/height depending on window size
+	   	var h = $w.height() -40 < self.height ? $w.height() -40 : self.height;
+	   	var w = $w.width() -40 < self.width ? $w.width() -40 : self.width;
+			
+	   	var b = $overlay.attr('class')
+	   	alert(b)
+			
+	   	// set overlay css.
 	   	$overlay.css({
 				width: w,
 				height: h,
 				display: 'none',
 				position: conf.pos,
 				top: '50%',
+				left: '50%',
 				marginLeft: '-' + w/2 + 'px',
-				marginTop: '-' + h/2 + 'px',
+				marginTop: '-' + ((h/2)+4) + 'px',
 				zIndex: '9999'
 			})
 	   }
@@ -159,7 +170,7 @@
 			// load content
 			switch(conf.contentType){
 				case 'iframe':
-   				$overlay = $('<iframe />').appendTo('body');
+   				$overlay = $('<iframe />').prependTo('body');
    				
    				if(conf.wrapper != null){ $overlay.attr("class", conf.wrapper); }
 	   			
@@ -172,7 +183,7 @@
 			   		
 					   // fade in content
 					   $progress.fadeOut(500, function(){
-					   	$overlay.css({left: '50%'}).fadeIn(conf.speed)
+					   	$overlay.fadeIn(conf.speed)
 					   })
 		   			
 			   		$overlay.contents().find(conf.closeButtonId).one('click', function(e){
@@ -183,6 +194,7 @@
 					break;
 				case 'inpage':
 					console.warn('"inpage" switch not enabled');
+					
 					break;
 				case 'ajax':
 					console.warn('"ajax" switch not enabled');
@@ -219,6 +231,8 @@
    			);
    			opened = false;
    		},
+   		width: null,
+   		height: null,
    		getOverlay: function(){
    			return $overlay;
    		}
