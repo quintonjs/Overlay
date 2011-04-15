@@ -19,7 +19,14 @@
 		  		mask: {
 		  			loadSpeed: 1000
 		  		},
-		  		height: '400'
+		  		progress: {
+		  			src: $('<img />').attr('src', 'progress.gif')
+		  		},
+		  		height: '400',
+		  		controlPanel: {
+		  			draggable: false,
+		  			src: null
+		  		}
 		  	});
 		});
 	</script>
@@ -44,6 +51,15 @@
 </head>
 <!--  -->
 <body><!-- data-width="1000" -->
+	
+	<div class="overlay">
+		<div class="control">
+			<!-- fixed height, dynamic width -->
+		</div>
+		<!-- div/iframe -->
+		<!-- dynamic width/height -->
+	</div>
+	
 	<input type="button" value="click test" class="inp"   />
 	<div class="foo">
 		

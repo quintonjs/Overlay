@@ -1,6 +1,8 @@
 /**
  * quintons@qsheppard.com
  */
+
+ 
 (function($){ 
 	
 	$.overlaySettings = {
@@ -22,8 +24,9 @@
 		},
  		progress: {
  			id: "Progress",
- 			src: 'progress.gif'
- 		}
+ 			src: null
+ 		},
+ 		
 	}
 	
 	var $mask, $progress, $overlay = null;
@@ -36,7 +39,13 @@
    		// does progress exist?
    		if(!$progress.length){
 	   		// create & show progress
-	   		$progress = $('<img src="'+conf.progress.src+'" id="overlayProgress" />');
+	   		$progress = typeof conf.progress.src === 'string' ?
+	   			$('<img src="'+conf.progress.src+'" id="'+conf.progress.id+'" />') : 
+	   			conf.progress.src !== null ? conf.progress.src.attr('id', conf.progress.id) : null;
+	   		
+	   		if($progress === null){
+   				throw("unable to create progress, you must pass either a jQ object or image name");
+   			}
 	   		$progress.css({
 	   			top: '50%',
 	   			display: 'none',
@@ -141,16 +150,13 @@
    	var setOverlayCss = function(){
    		// set the overlay's default width/height
    		self.width 	= 	conf.width != null ? conf.width : 
-								trigger.data('width') ? trigger.data('width') : $overlay.outerWidth();
+								trigger.data('width') ? trigger.data('width') : $overlay.width();
    		self.height = 	conf.height != null ? conf.height : 
-	   						trigger.data('height') ? trigger.data('height') : $overlay.outerHeight();
+	   						trigger.data('height') ? trigger.data('height') : $overlay.height();
 	   	
 	   	// set the current overlay width/height depending on window size
 	   	var h = $w.height() -40 < self.height ? $w.height() -40 : self.height;
 	   	var w = $w.width() -40 < self.width ? $w.width() -40 : self.width;
-			
-	   	var b = $overlay.attr('class')
-	   	alert(b)
 			
 	   	// set overlay css.
 	   	$overlay.css({
