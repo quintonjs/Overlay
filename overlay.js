@@ -176,6 +176,7 @@
 			// load content
 			switch(conf.contentType){
 				case 'iframe':
+				
    				$overlay = $('<iframe />').prependTo('body');
    				
    				if(conf.wrapper != null){ $overlay.attr("class", conf.wrapper); }
@@ -192,9 +193,11 @@
 					   	$overlay.fadeIn(conf.speed)
 					   })
 		   			
+		   			//---- Chrome Issue
+		   			// Only access iframe with same domain name
 			   		$overlay.contents().find(conf.closeButtonId).one('click', function(e){
-			   			self.close(e)
-			   			return e.preventDefault()
+			   			self.close(e);
+			   			return e.preventDefault();
 			   		})
 	   			})
 					break;
