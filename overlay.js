@@ -193,7 +193,7 @@
 					   	$overlay.fadeIn(conf.speed)
 					   })
 		   			
-		   			//---- Chrome Issue
+		   			//---- Chrome/IE Issue
 		   			// Only access iframe with same domain name
 			   		$overlay.contents().find(conf.closeButtonId).one('click', function(e){
 			   			self.close(e);
@@ -204,7 +204,11 @@
 				case 'inpage':
 					console.warn('"inpage" switch not enabled');
 					
+					$(conf.contentSrc).prependTo('body');
+					
+					
 					break;
+					
 				case 'ajax':
 					console.warn('"ajax" switch not enabled');
 					break;
@@ -232,10 +236,13 @@
    		},
    		close: function(e){
    			$overlay.fadeOut(conf.speed, 
-   				function(){mask.close(conf	, 
-						function(){
-							if(conf.submitPageOnClose){document.forms[0].submit();}
+   				function(){mask.close(conf, 
+					function(){
+						// check if form exists
+						if((conf.submitPageOnClose) && (document.forms.length > 0)){
+							document.forms[0].submit();
 						}
+					}
    				)}
    			);
    			opened = false;
@@ -247,9 +254,9 @@
    		}
    	})
     	
-    	if(conf.load){
-    		self.load();
-    	}
+    if(conf.load){
+    	self.load();
+    }
     	
    	return self;
    }
